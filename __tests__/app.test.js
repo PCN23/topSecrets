@@ -14,10 +14,10 @@ const thisUser = {
 const registerAndLogin = async (userProps = {}) => {
   const password = userProps.password ?? thisUser.password;
   const agent = request.agent(app);
-  const user = await UserService.create({ ...thisUser, ...userProps });
-  const { email } = user;
+  const thisUser = await UserService.create({ ...thisUser, ...userProps });
+  const { email } = thisUser;
   await agent.post('/api/v1/secrets').send({ email, password });
-  return [agent, user];
+  return [agent, thisUser];
 };
 
 describe('secret routes', () => {
