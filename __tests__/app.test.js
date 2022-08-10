@@ -9,6 +9,7 @@ const registerAndLogin = async (userProps = {}) => {
   const agent = request.agent(app);
   const newUser = await UserService.create({ ...thisUser, ...userProps });
   const { email } = newUser;
+  await agent.post('/api/v1/users/sessions').send({ email, password });
   return [agent, newUser];
 };
 
@@ -21,7 +22,7 @@ describe('secret routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
-  it.skip('returns a new user', async () => {
+  it('returns a new user', async () => {
     const res = await request(app).post('/api/v1/users').send(thisUser);
     const { email } = thisUser;
     expect(res.body).toEqual({
@@ -30,7 +31,7 @@ describe('secret routes', () => {
     });
   });
 
-  it.skip('it should sign in user', async () => {
+  it('it should sign in user', async () => {
     await request(app).post('/api/v1/users').send(thisUser);
     const res = await request(app).post('/api/v1/users/sessions').send({
       email: thisUser.email,
@@ -40,13 +41,12 @@ describe('secret routes', () => {
     expect(res.body).toEqual({ message: 'Signed in successfully!' });
   });
 
-  it.skip('DELETE a users sessions', async () => {
+  it('DELETE a users sessions', async () => {
     const [agent] = await registerAndLogin();
     const res = await agent.delete('/api/v1/users/sessions');
     expect(res.status).toBe(204);
   });
 
- 
   afterAll(() => {
     pool.end();
   });
