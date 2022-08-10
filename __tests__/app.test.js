@@ -41,6 +41,12 @@ describe('secret routes', () => {
     expect(res.body).toEqual({ message: 'Signed in successfully!' });
   });
 
+  it('DELETE a users sessions', async () => {
+    const [agent] = await registerAndLogin();
+    const res = await agent.delete('/api/v1/users/sessions');
+    expect(res.status).toBe(204);
+  });
+
   afterAll(() => {
     pool.end();
   });
