@@ -5,27 +5,25 @@ const request = require('supertest');
 const app = require('../lib/app');
 const UserService = require('../lib/services/UserService');
 
-
-const thisUser = {
-  email: 'user@user.com',
-  password: '1234',
-};
-
 const registerAndLogin = async (userProps = {}) => {
   const password = userProps.password ?? thisUser.password;
   const agent = request.agent(app);
-  const thisUser = await UserService.create({ ...thisUser, ...userProps });
-  const { email } = thisUser;
-  await agent.post('/api/v1/secrets').send({ email, password });
-  return [agent, thisUser];
+  const newUser = await UserService.create({ ...thisUser, ...userProps });
+  const { email } = newUser;
+  return [agent, newUser];
+};
+
+const thisUser = {
+  email: 'user@user.com',
+  password: '123456',
 };
 
 describe('secret routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
-  it('#POST logs in a user', async () => {
-    const res = await request(app).post('/api/v1/users/sessions').send(thisUser);
+  it('returns a new user', async () => {
+    const res = await request(app).post('/api/v1/users').send(thisUser);
     const { email } = thisUser;
     expect(res.body).toEqual({
       id: expect.any(String),
@@ -33,15 +31,14 @@ describe('secret routes', () => {
     });
   });
 
-  it('returns the current user', async () => {
-    const [agent, thisUser] = await registerAndLogin();
-    const me = await agent.get('/api/v1/users/sessions');
-
-    expect(me.body).toEqual({
-      ...thisUser,
-      exp: expect.any(Number),
-      iat: expect.any(Number),
+  it('it should sign in user', async () => {
+    await request(app).post('/api/v1/users').send(thisUser);
+    const res = await request(app).post('/api/v1/users/sessions').send({
+      email: thisUser.email,
+      password: thisUser.password,
     });
+
+    expect(res.body).toEqual({ message: 'Signed in successfully!' });
   });
 
   afterAll(() => {
