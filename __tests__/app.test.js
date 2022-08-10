@@ -47,6 +47,11 @@ describe('secret routes', () => {
     expect(res.status).toBe(204);
   });
 
+  it('/get secrets should return secrets for authenticated users', async () => {
+    const [agent] = await registerAndLogin();
+    const res = await agent.get('/api/v1/secrets');
+    expect(res.status).toBe(200);
+  });
   afterAll(() => {
     pool.end();
   });
